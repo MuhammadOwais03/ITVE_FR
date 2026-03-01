@@ -65,53 +65,65 @@ const Navbar = ({ navigation, activeTab }) => {
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    // alignItems: 'center',
+  },
+
+  // This solid dark layer sits BEHIND the BlurView to give it
+  // the dark glass appearance instead of seeing through to the screen
+  solidBase: {
+    position: 'absolute',
+    width: '100%',
+    height: 75,
+    borderRadius: 40,
+    backgroundColor: 'rgba(20, 20, 20, 0.92)',
+  },
+
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    position: 'absolute',
-    bottom: 20,
-    alignSelf: 'center',
-    width: '90%',
+    width: '92%',
+    height: 75,
     borderRadius: 40,
-    paddingVertical: 12,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+
+    // Semi-transparent dark tint layered on top of the blur
+    backgroundColor: 'rgba(15, 15, 15, 0.55)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+
     overflow: 'hidden',
-    backgroundColor: 'rgba(16, 26, 37, 0.4)', 
   },
+
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    height: 55,
   },
-  activeIndicatorContainer: {
+
+  activeGlow: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: -1,
-  },
-  glow: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 204, 255, 0.5)',
-    shadowColor: '#00CCFF',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.95,
+
+    shadowColor: '#FFFFFF',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 8,
   },
+
   label: {
-    fontFamily: 'Inter',
     fontSize: 11,
     marginTop: 4,
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });
 
