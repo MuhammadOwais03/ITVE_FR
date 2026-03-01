@@ -173,7 +173,6 @@ export default function App() {
           <Stack.Screen name="GenerateTeacherAccount" component={GenerateTeacherAccount} />
           
           {/* Admin Nav Placeholders */}
-          <Stack.Screen name="Home" component={Placeholder} />
           <Stack.Screen name="GrowthScreen" component={Placeholder} />
           <Stack.Screen name="ReportsScreen" component={Placeholder} />
           <Stack.Screen name="AdminScreen" component={Placeholder} />
