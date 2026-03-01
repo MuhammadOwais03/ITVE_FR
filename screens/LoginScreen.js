@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+  import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import Field from '../students/components/Field';
 import { FontAwesome } from '@expo/vector-icons';
 import { BACKEND_URL } from '@env';
 
-const API_URL = `${BACKEND_URL}/api/v1/auth`; 
+const API_URL = `${BACKEND_URL}:8000/api/v1/auth`; 
 
 const LoginScreen = (props) => {
   const [isRemembered, setIsRemembered] = useState(false);
@@ -33,7 +33,9 @@ const LoginScreen = (props) => {
 
     setIsLoading(true);
 
+
     try {
+      console.log(username, password)
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
@@ -46,6 +48,7 @@ const LoginScreen = (props) => {
       });
 
       const data = await response.json();
+      console.log(data)
 
       if (response.ok) {
         await AsyncStorage.setItem('userToken', data.access_token);
@@ -70,7 +73,7 @@ const LoginScreen = (props) => {
              props.navigation.replace('SchoolTab');
              
         } else if (type === 'admin' || type === 'Admin') {
-             props.navigation.replace('AdminDashboard'); 
+             props.navigation.replace('AdminTabs'); 
              
         } else {
              Alert.alert("Notice", `Unknown User Type: ${type}`);

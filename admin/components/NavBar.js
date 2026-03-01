@@ -1,21 +1,22 @@
-
-
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons'; // ✅ Single clean import
+
+
 
 const Navbar = ({ navigation, activeTab }) => {
+  console.log(navigation, activeTab)
   const tabs = [
-    { name: 'Home', icon: 'home-outline', activeIcon: 'home', route: 'Home' },
-    { name: 'Messages', icon: 'chatbubble-outline', activeIcon: 'chatbubble', route: 'MessagesScreen' },
-    { name: 'Updates', icon: 'notifications-outline', activeIcon: 'notifications', route: 'Updates' },
-    { name: 'Courses', icon: 'monitor-screenshot', activeIcon: 'monitor-screenshot', route: 'Courses', isMCI: true },
-    { name: 'Profile', icon: 'person-outline', activeIcon: 'person', route: 'Profile' },
+    { name: 'Delete',        label: 'Delete',  route: 'Delete',        icon: 'trash-outline',         activeIcon: 'trash' },
+    { name: 'GrowthScreen',  label: 'Growth',  route: 'GrowthScreen',  icon: 'bar-chart-outline',     activeIcon: 'bar-chart' },
+    { name: 'ReportsScreen', label: 'Reports', route: 'ReportsScreen', icon: 'notifications-outline', activeIcon: 'notifications' },
+    { name: 'Courses',       label: 'Courses', route: 'Courses',       icon: 'play-circle-outline',   activeIcon: 'play-circle' },
+    { name: 'AdminScreen',   label: 'Admin',   route: 'AdminScreen',   icon: 'person-outline',        activeIcon: 'person' },
   ];
 
   return (
-    <BlurView intensity={30} tint="dark" style={styles.container}>
+      <BlurView intensity={30} tint="dark" style={styles.container}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.name;
         return (
@@ -26,23 +27,19 @@ const Navbar = ({ navigation, activeTab }) => {
             activeOpacity={0.7} 
           >
           
-            {isActive && (
-              <View style={styles.activeIndicatorContainer}>
-                <View style={styles.glow} />
-              </View>
-            )}
+            {isActive && <View style={styles.activeGlow} />}
 
             {tab.isMCI ? (
               <MaterialCommunityIcons
                 name={tab.icon}
                 size={26}
-                color={isActive ? '#FFFFFF' : '#00CCFF'}
+                color={isActive ? '#FFFFFF' : '#FFFFFF'}
               />
             ) : (
               <Ionicons
                 name={isActive ? tab.activeIcon : tab.icon}
                 size={24}
-                color={isActive ? '#FFFFFF' : '#00CCFF'}
+                color={isActive ? '#FFFFFF' : '#FFFFFF'}
               />
             )}
             
@@ -50,12 +47,12 @@ const Navbar = ({ navigation, activeTab }) => {
               style={[
                 styles.label,
                 { 
-                  color: isActive ? '#FFFFFF' : '#00CCFF',
+                  color: isActive ? '#FFFFFF' : '#FFFFFF',
                   fontWeight: isActive ? '700' : '500' 
                 },
               ]}
             >
-              {tab.name}
+              {tab.label}
             </Text>
           </TouchableOpacity>
         );
@@ -67,9 +64,9 @@ const Navbar = ({ navigation, activeTab }) => {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 24,
     width: '100%',
-    // alignItems: 'center',
+    alignItems: 'center',
   },
 
   // This solid dark layer sits BEHIND the BlurView to give it
@@ -83,10 +80,13 @@ const styles = StyleSheet.create({
   },
 
   container: {
+     
+    margin: 'auto',
     flexDirection: 'row',
-    width: '92%',
+    width: '100%',
     height: 75,
-    borderRadius: 40,
+    borderTopRightRadius: 40,
+    borderTopLeftRadius: 40,
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingHorizontal: 10,
@@ -105,19 +105,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  activeGlow: {
-    position: 'absolute',
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#FFFFFF',
-    opacity: 0.95,
+  // activeGlow: {
+  //   position: 'absolute',
+  //   width: 52,
+  //   height: 52,
+  //   borderRadius: 26,
+  //   backgroundColor: '#FFFFFF',
+  //   opacity: 0.95,
 
+  //   shadowColor: '#FFFFFF',
+  //   shadowOffset: { width: 0, height: 0 },
+  //   shadowOpacity: 0.5,
+  //   shadowRadius: 10,
+  //   zIndex: -2,
+  //   elevation: 8,
+  // },
+
+  activeGlow: {
+    // Matches spec: white ellipse, blur(7.5px), 70x70
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.5,
+
+    // White bloom — mirrors CSS filter: blur(7.5px)
     shadowColor: '#FFFFFF',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 10,
   },
 
   label: {

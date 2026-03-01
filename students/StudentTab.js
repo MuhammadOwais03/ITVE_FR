@@ -17,7 +17,7 @@ export default function StudentTab() {
    
  <Tab.Navigator
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <Navbar {...props} />}
+      tabBar={(props) => <Navbar {...props}  activeTab={props.state.routes[props.state.index].name} />}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="MessagesScreen" component={MessagesScreen} />
