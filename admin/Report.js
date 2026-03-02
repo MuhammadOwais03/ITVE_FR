@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,16 +6,15 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  SafeAreaView,
   StatusBar,
   Modal,
   Dimensions,
   FlatList,
-  ScrollView,
-  TouchableWithoutFeedback,
+  Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const initialReports = [
   {
@@ -25,405 +24,345 @@ const initialReports = [
     time: '3:30 pm',
     avatar: 'https://i.pravatar.cc/150?img=11',
     complaint: 'someone is posting my picture from this account\ncan you look into it',
-    attachments: [
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800&auto=format&fit=crop',
-    ],
-    status: 'pending',
-    handledBy: null,
+    attachments: ['1x JPG'],
+    status: 'resolved',
+    handledBy: 'Admin.5',
+    isPinned: false,
   },
   {
     id: '2',
-    username: 'dev_guru99',
-    date: '27/2/2026',
-    time: '10:15 am',
-    avatar: 'https://i.pravatar.cc/150?img=33',
-    complaint:
-      'This user is spamming my inbox with fake gig requests and asking for free source code for a React Native app. Here are screenshots of the chat history.',
-    attachments: [
-      'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=600&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1521931961826-fe48677230a5?q=80&w=600&auto=format&fit=crop',
-    ],
-    status: 'pending',
-    handledBy: null,
+    username: 'sahil.xoxo',
+    date: '24/1/2026',
+    time: '3:30 pm',
+    avatar: 'https://i.pravatar.cc/150?img=11',
+    complaint: 'someone is posting my picture from this account\ncan you look into it',
+    attachments: ['1x JPG'],
+    status: 'bogus',
+    handledBy: 'Admin.3',
+    isPinned: false,
   },
   {
     id: '3',
-    username: 'ui_phantom',
-    date: '26/2/2026',
-    time: '8:45 pm',
-    avatar: 'https://i.pravatar.cc/150?img=68',
-    complaint:
-      'They completely cloned my freelance portfolio website design and are using it to steal clients. Please take their URL down immediately.',
+    username: 'sahil.xoxo',
+    date: '24/1/2026',
+    time: '3:30 pm',
+    avatar: 'https://i.pravatar.cc/150?img=11',
+    complaint: 'someone is posting my picture from this account\ncan you look into it',
+    attachments: ['1x JPG'],
+    status: 'pending',
+    handledBy: null,
+    isPinned: false,
+  },
+  {
+    id: '4',
+    username: 'alex.jones',
+    date: '23/1/2026',
+    time: '2:15 pm',
+    avatar: 'https://i.pravatar.cc/150?img=45',
+    complaint: 'Received hateful comments from another user\nPlease take action',
+    attachments: ['2x PNG'],
+    status: 'resolved',
+    handledBy: 'Admin.1',
+    isPinned: true,
+  },
+  {
+    id: '5',
+    username: 'emma.tech',
+    date: '23/1/2026',
+    time: '1:45 pm',
+    avatar: 'https://i.pravatar.cc/150?img=22',
+    complaint: 'My account was hacked, someone changed my password\nI cannot login anymore',
     attachments: [],
+    status: 'pending',
+    handledBy: null,
+    isPinned: false,
+  },
+  {
+    id: '6',
+    username: 'mike.dev',
+    date: '22/1/2026',
+    time: '4:20 pm',
+    avatar: 'https://i.pravatar.cc/150?img=33',
+    complaint: 'Inappropriate content posted in comments',
+    attachments: ['1x JPG', '1x PNG'],
+    status: 'bogus',
+    handledBy: 'Admin.7',
+    isPinned: false,
+  },
+  {
+    id: '7',
+    username: 'sarah.khan',
+    date: '22/1/2026',
+    time: '11:30 am',
+    avatar: 'https://i.pravatar.cc/150?img=18',
+    complaint: 'Spam messages from multiple accounts\nBeing harassed constantly',
+    attachments: [],
+    status: 'pending',
+    handledBy: null,
+    isPinned: false,
+  },
+  {
+    id: '8',
+    username: 'john.smith',
+    date: '21/1/2026',
+    time: '9:00 am',
+    avatar: 'https://i.pravatar.cc/150?img=50',
+    complaint: 'Copyright infringement - my work is being stolen',
+    attachments: ['3x JPG'],
     status: 'resolved',
     handledBy: 'Admin.2',
+    isPinned: false,
   },
+  {
+    id: '9',
+    username: 'lisa.art',
+    date: '21/1/2026',
+    time: '5:45 pm',
+    avatar: 'https://i.pravatar.cc/150?img=65',
+    complaint: 'False accusations against me in comments\nPlease remove defamatory content',
+    attachments: [],
+    status: 'pending',
+    handledBy: null,
+    isPinned: false,
+  },
+  {
+    id: '10',
+    username: 'david.code',
+    date: '20/1/2026',
+    time: '2:30 pm',
+    avatar: 'https://i.pravatar.cc/150?img=72',
+    complaint: 'Phishing attempt - suspicious links in messages',
+    attachments: ['1x PNG'],
+    status: 'resolved',
+    handledBy: 'Admin.4',
+    isPinned: false,
+  }
 ];
 
-const SendIcon   = () => <Text style={s.sendText}>➤</Text>;
-const UploadIcon = () => <Text style={s.uploadText}>⬆</Text>;
-
-const NAV_ITEMS = [
-  { label: 'Delete',  icon: '✕' },
-  { label: 'Growth',  icon: '↗' },
-  { label: 'Reports', icon: '◎', active: true },
-  { label: 'Courses', icon: '▣' },
-  { label: 'Admin',   icon: '⊙' },
-];
-
-export default function Report() {
-  const [reports, setReports]                 = useState(initialReports);
-  const [activeReport, setActiveReport]       = useState(null);
+export default function App() {
+  const [reports, setReports] = useState(initialReports);
+  const [activeReport, setActiveReport] = useState(null);
   const [showActionSheet, setShowActionSheet] = useState(false);
-  const [replyMap, setReplyMap]               = useState({});
+  const [isHistoryView, setIsHistoryView] = useState(false); // Toggles main feed vs history
 
-  // { reportId: string, url: string } | null
-  const [expandedImage, setExpandedImage] = useState(null);
+  // --- Data Filtering & Sorting ---
+  const displayData = useMemo(() => {
+    if (isHistoryView) {
+      // Show ONLY resolved or bogus reports
+      return reports.filter(r => r.status !== 'pending');
+    } else {
+      // Show ONLY pending reports, and sort pinned to the top
+      return reports
+        .filter(r => r.status === 'pending')
+        .sort((a, b) => {
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+          return 0;
+        });
+    }
+  }, [reports, isHistoryView]);
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const handleStatusChange = (newStatus, adminName) => {
-    setReports(prev =>
-      prev.map(r =>
-        r.id === activeReport.id
-          ? { ...r, status: newStatus, handledBy: adminName }
-          : r
-      )
-    );
-    setShowActionSheet(false);
-    setActiveReport(null);
-  };
-
-  const openActionMenu = report => {
+  // --- Handlers ---
+  const handleThreeDotsClick = (report) => {
     setActiveReport(report);
     setShowActionSheet(true);
   };
 
-  const closeActionSheet = () => {
+  const handleStatusChange = (newStatus, adminName) => {
+    setReports(prev => prev.map(report => 
+      report.id === activeReport?.id 
+        ? { ...report, status: newStatus, handledBy: adminName } 
+        : report
+    ));
     setShowActionSheet(false);
-    setActiveReport(null);
   };
 
-  const handleThumbPress = (reportId, url) => {
-    if (expandedImage?.reportId === reportId && expandedImage?.url === url) {
-      setExpandedImage(null); // collapse if tapping same image again
-    } else {
-      setExpandedImage({ reportId, url });
-    }
+  const handleReviewAgain = () => {
+    setReports(prev => prev.map(report => 
+      report.id === activeReport?.id 
+        ? { ...report, status: 'pending', handledBy: null } 
+        : report
+    ));
+    setShowActionSheet(false);
   };
 
-  // ── Action Modal ───────────────────────────────────────────────────────────
-  const ActionModal = () => {
-    if (!activeReport) return null;
-    const isPending = activeReport.status === 'pending';
-    return (
-      <Modal visible={showActionSheet} transparent animationType="fade">
-        <TouchableWithoutFeedback onPress={closeActionSheet}>
-          <View style={s.overlay}>
-            <TouchableWithoutFeedback>
-              <View style={s.actionBox}>
-                {isPending ? (
-                  <>
-                    <TouchableOpacity
-                      style={s.btnLight}
-                      onPress={() => handleStatusChange('resolved', 'Admin.5')}
-                    >
-                      <Text style={s.btnLightTxt}>Has Been Resolved</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[s.btnRed, { marginTop: 12 }]}
-                      onPress={() => handleStatusChange('bogus', 'Admin.3')}
-                    >
-                      <Text style={s.btnRedTxt}>Report was Bogus</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <TouchableOpacity style={s.btnLight} onPress={closeActionSheet}>
-                      <Text style={s.btnLightTxt}>Pin</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[s.btnRed, { marginTop: 12 }]}
-                      onPress={() => handleStatusChange('pending', null)}
-                    >
-                      <Text style={s.btnRedTxt}>Review Again</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    );
+  const handleTogglePin = () => {
+    setReports(prev => prev.map(report => 
+      report.id === activeReport?.id 
+        ? { ...report, isPinned: !report.isPinned } 
+        : report
+    ));
+    setShowActionSheet(false);
   };
 
-  // ── Report Card ────────────────────────────────────────────────────────────
-  const renderCard = ({ item }) => {
-    const imgExpanded =
-      expandedImage?.reportId === item.id ? expandedImage.url : null;
-
-    return (
-      <View style={s.card}>
-
-        {/* ── Header (always shown) ── */}
-        <View style={s.topSection}>
-          <View style={s.cardHeader}>
-            <View style={s.userRow}>
-              <Image source={{ uri: item.avatar }} style={s.avatar} />
-              <View>
-                <Text style={s.username}>{item.username}</Text>
-                <Text style={s.dateText}>{item.date}</Text>
-              </View>
-            </View>
-            <View style={s.timeCol}>
-              <TouchableOpacity style={s.dotsBtn} onPress={() => openActionMenu(item)}>
-                <Text style={s.dotsText}>•••</Text>
-              </TouchableOpacity>
-              <Text style={s.timeText}>{item.time}</Text>
-            </View>
-          </View>
-
-          {/* Complaint: hide while image is expanded so card looks like screenshot */}
-          {!imgExpanded && (
-            <Text style={s.complaint}>{item.complaint}</Text>
-          )}
-        </View>
-
-        {/* ── Expanded full-width image ── */}
-        {imgExpanded ? (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setExpandedImage(null)}
-            style={s.expandedWrap}
-          >
-            <Image
-              source={{ uri: imgExpanded }}
-              style={s.expandedImg}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        ) : (
-          /* ── Thumbnail strip ── */
-          item.attachments.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={s.galleryContent}
-              style={s.gallery}
-            >
-              {item.attachments.map((url, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() => handleThumbPress(item.id, url)}
-                >
-                  <Image source={{ uri: url }} style={s.thumb} />
-                  <Text style={s.thumbLabel}>{i + 1}x JPG</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )
-        )}
-
-        {/* ── Footer ── */}
-        <View style={s.cardFooter}>
-          {item.status === 'pending' ? (
-            <View style={s.replyBox}>
-              <TextInput
-                style={s.replyInput}
-                placeholder="Reply Now"
-                placeholderTextColor="#555"
-                value={replyMap[item.id] || ''}
-                onChangeText={t => setReplyMap(p => ({ ...p, [item.id]: t }))}
-              />
-              <TouchableOpacity>
-                <SendIcon />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={[
-                s.statusBadge,
-                item.status === 'bogus' ? s.badgeRed : s.badgeLight,
-              ]}
-              onPress={() => openActionMenu(item)}
-            >
-              <Text style={s.statusTxt}>
-                {item.status === 'resolved'
-                  ? `Has Been Resolved by ${item.handledBy}`
-                  : `Report was Bogus by ${item.handledBy}`}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    );
-  };
-
-  // ── Root ───────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={s.root}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
-
-      <View style={s.header}>
-        <View style={{ width: 28 }} />
-        <Text style={s.headerTitle}>Reports</Text>
-        <UploadIcon />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={{ width: 40 }} /> {/* Spacer for centering */}
+        <Text style={styles.headerTitle}>Reports</Text>
+        
+        {/* The Cloud Button - Changes style when history is active */}
+        <TouchableOpacity 
+          style={[styles.cloudBtn, isHistoryView && styles.cloudBtnActive]} 
+          onPress={() => setIsHistoryView(!isHistoryView)}
+        >
+          <Ionicons 
+            name="cloud-upload" 
+            size={22} 
+            color={isHistoryView ? '#000' : '#fff'} 
+          />
+        </TouchableOpacity>
       </View>
 
+      {/* Main Feed List */}
       <FlatList
-        data={reports}
-        keyExtractor={item => item.id}
-        renderItem={renderCard}
-        contentContainerStyle={{ paddingBottom: 110 }}
+        data={displayData}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            {isHistoryView ? "No resolved reports yet." : "No pending reports!"}
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <View style={[styles.card, item.isPinned && styles.pinnedCardBorder]}>
+            {item.isPinned && (
+              <View style={styles.pinnedLabel}>
+                <Ionicons name="pin" size={12} color="#000" />
+                <Text style={styles.pinnedLabelText}>Pinned</Text>
+              </View>
+            )}
+
+            <View style={styles.cardHeader}>
+              <View style={styles.userSection}>
+                <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                <View>
+                  <Text style={styles.username}>{item.username}</Text>
+                  <Text style={styles.dateText}>{item.date}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.timeSection}>
+                <TouchableOpacity onPress={() => handleThreeDotsClick(item)} style={styles.dotsIcon}>
+                   <Text style={styles.dotsText}>•••</Text>
+                </TouchableOpacity>
+                <Text style={styles.timeText}>{item.time}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.complaintText}>{item.complaint}</Text>
+            
+            {item.attachments.length > 0 && (
+              <Text style={styles.attachmentText}>{item.attachments[0]}</Text>
+            )}
+
+            <View style={styles.cardFooter}>
+              {item.status === 'pending' ? (
+                <View style={styles.replyBox}>
+                  <TextInput style={styles.replyInput} placeholder="Reply Now" placeholderTextColor="#666" />
+                  <TouchableOpacity>
+                    <Ionicons name="send" size={20} color="#555" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={[styles.statusBadge, item.status === 'bogus' ? styles.badgeRed : styles.badgeLight]}>
+                  <Text style={[styles.statusText, item.status === 'bogus' ? styles.textBlack : styles.textBlack]}>
+                    {item.status === 'resolved' ? `Has Been Resolved by ${item.handledBy}` : `Report was Bogus by ${item.handledBy}`}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
       />
 
-      
+      {/* Action Sheet Modal (Shared for both views) */}
+      <Modal visible={showActionSheet} transparent animationType="fade">
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setShowActionSheet(false)}
+        >
+          {activeReport && (
+            <View style={styles.actionContainer}>
+              {activeReport.status === 'pending' ? (
+                <>
+                  <TouchableOpacity style={styles.btnLight} onPress={() => handleStatusChange('resolved', 'Admin.5')}>
+                    <Text style={styles.btnLightText}>Has Been Resolved</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.btnRed} onPress={() => handleStatusChange('bogus', 'Admin.3')}>
+                    <Text style={styles.btnRedText}>Report was Bogus</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <TouchableOpacity style={styles.btnLight} onPress={handleTogglePin}>
+                    <Text style={styles.btnLightText}>{activeReport.isPinned ? 'Unpin' : 'Pin'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.btnRed} onPress={handleReviewAgain}>
+                    <Text style={styles.btnRedText}>Review Again</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+        </TouchableOpacity>
+      </Modal>
 
-      <ActionModal />
-    </SafeAreaView>
+    </View>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#000' },
-
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#111',
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1, 
+    backgroundColor: '#000',
+    paddingTop: Platform.OS === 'android' ? 40 : 50, // Hardcoded integer to prevent Snack crashes 
   },
-  headerTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
-  uploadText:  { color: '#fff', fontSize: 18 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 15 },
+  headerTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
+  
+  // Cloud Button Styles
+  cloudBtn: { padding: 8, borderRadius: 25 },
+  cloudBtnActive: { backgroundColor: '#E0E0E0' }, // The white circle when history is open
 
-  // Card
-  card: {
-    backgroundColor: '#111',
-    marginHorizontal: 14,
-    marginTop: 12,
-    borderRadius: 18,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#1c1c1c',
-  },
-  topSection: { padding: 15, paddingBottom: 0 },
-
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  userRow:  { flexDirection: 'row', alignItems: 'center' },
-  avatar:   { width: 40, height: 40, borderRadius: 20, marginRight: 11 },
-  username: { color: '#e0e0e0', fontSize: 14, fontWeight: '600' },
-  dateText: { color: '#666', fontSize: 11, marginTop: 2 },
-  timeCol:  { alignItems: 'flex-end' },
-  dotsBtn: {
-    backgroundColor: '#1e1e1e',
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  dotsText: { color: '#888', fontSize: 12, letterSpacing: 2 },
-  timeText: { color: '#666', fontSize: 11 },
-
-  complaint: {
-    color: '#bbb',
-    fontSize: 13.5,
-    lineHeight: 20,
-    marginBottom: 14,
-  },
-
-  // Expanded full-width image (edge-to-edge inside card)
-  expandedWrap: {
-    width: '100%',
-    height: height * 0.38,
-  },
-  expandedImg: {
-    width: '100%',
-    height: '100%',
-  },
-
-  // Thumbnail strip
-  gallery:        { marginBottom: 2 },
-  galleryContent: { paddingHorizontal: 15, paddingBottom: 14 },
-  thumb:          { width: 60, height: 60, borderRadius: 8, marginRight: 10, backgroundColor: '#222' },
-  thumbLabel:     { color: '#555', fontSize: 10, fontWeight: '600', marginTop: 3 },
-
+  // Card Styles
+  card: { backgroundColor: '#111', marginHorizontal: 15, marginTop: 15, borderRadius: 16, padding: 16 },
+  pinnedCardBorder: { borderWidth: 1, borderColor: '#444' },
+  pinnedLabel: { position: 'absolute', top: -10, left: 16, backgroundColor: '#E0E0E0', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, zIndex: 10 },
+  pinnedLabelText: { fontSize: 10, fontWeight: 'bold', color: '#000', marginLeft: 4 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  userSection: { flexDirection: 'row', alignItems: 'center' },
+  avatar: { width: 42, height: 42, borderRadius: 21, marginRight: 12 },
+  username: { color: '#E0E0E0', fontSize: 15, fontWeight: '700' },
+  dateText: { color: '#777', fontSize: 12, marginTop: 2 },
+  timeSection: { alignItems: 'flex-end' },
+  dotsIcon: { paddingHorizontal: 4, marginBottom: 2 },
+  dotsText: { color: '#888', fontSize: 18, letterSpacing: 1 },
+  timeText: { color: '#777', fontSize: 12 },
+  complaintText: { color: '#ccc', fontSize: 14, lineHeight: 20, marginBottom: 8 },
+  attachmentText: { color: '#666', fontSize: 12, fontWeight: '600', marginBottom: 16 },
+  
   // Footer
-  cardFooter: { padding: 15, paddingTop: 12 },
-  replyBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  replyInput: { flex: 1, color: '#fff', fontSize: 13 },
-  sendText:   { color: '#666', fontSize: 18 },
+  cardFooter: { marginTop: 2 },
+  replyBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1C1C1E', borderRadius: 25, paddingHorizontal: 16, paddingVertical: 10 },
+  replyInput: { flex: 1, color: '#fff', fontSize: 14, paddingVertical: 0 },
+  statusBadge: { paddingVertical: 14, borderRadius: 25, alignItems: 'center' },
+  badgeLight: { backgroundColor: '#E0E0E0' },
+  badgeRed: { backgroundColor: '#8B0000' },
+  statusText: { fontWeight: '700', fontSize: 15 },
+  textBlack: { color: '#000' },
+  emptyText: { color: '#666', textAlign: 'center', marginTop: 50, fontSize: 16 },
 
-  statusBadge: { paddingVertical: 13, borderRadius: 25, alignItems: 'center' },
-  badgeLight:  { backgroundColor: '#e0e0e0' },
-  badgeRed:    { backgroundColor: '#6b0000' },
-  statusTxt:   { color: '#000', fontWeight: '700', fontSize: 13 },
-
-  // Modal
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionBox: {
-    width: width * 0.85,
-    backgroundColor: '#1c1c1e',
-    borderRadius: 22,
-    padding: 20,
-    alignItems: 'center',
-  },
-  btnLight: {
-    width: '100%',
-    backgroundColor: '#e0e0e0',
-    paddingVertical: 15,
-    borderRadius: 30,
-    alignItems: 'center',
-  },
-  btnLightTxt: { color: '#000', fontWeight: '700', fontSize: 14 },
-  btnRed: {
-    width: '100%',
-    backgroundColor: '#6b0000',
-    paddingVertical: 15,
-    borderRadius: 30,
-    alignItems: 'center',
-  },
-  btnRedTxt: { color: '#000', fontWeight: '700', fontSize: 14 },
-
-  // Bottom nav
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#090909',
-    borderTopWidth: 1,
-    borderTopColor: '#1a1a1a',
-    paddingTop: 10,
-    paddingBottom: 26,
-  },
-  navItem:           { alignItems: 'center' },
-  navIconWrap:       { width: 34, height: 34, justifyContent: 'center', alignItems: 'center', borderRadius: 17, marginBottom: 4 },
-  navIconActive:     { backgroundColor: '#fff', width: 44, height: 44, borderRadius: 22 },
-  navIcon:           { color: '#555', fontSize: 16 },
-  navIconTextActive: { color: '#000' },
-  navLabel:          { color: '#555', fontSize: 10, fontWeight: '500' },
-  navLabelActive:    { color: '#fff' },
+  // Modals
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
+  actionContainer: { width: width * 0.85, backgroundColor: '#1C1C1E', borderRadius: 20, padding: 20, alignItems: 'center' },
+  btnLight: { width: '100%', backgroundColor: '#E0E0E0', paddingVertical: 16, borderRadius: 30, alignItems: 'center', marginBottom: 12 },
+  btnLightText: { color: '#000', fontWeight: '700', fontSize: 15 },
+  btnRed: { width: '100%', backgroundColor: '#8B0000', paddingVertical: 16, borderRadius: 30, alignItems: 'center' },
+  btnRedText: { color: '#000', fontWeight: '700', fontSize: 15 },
 });
