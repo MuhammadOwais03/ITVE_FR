@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -88,26 +88,28 @@ import NewCourse from './admin/NewCourse';
 import GenerateTeacherAccount from './admin/GenerateTeacherAccount';
 import Navbar from './admin/components/NavBar';
 import Report from './admin/Report';
+import Domain from './admin/Domain';
+import MainCourse from './admin/MainCourse';
 
 const Stack = createNativeStackNavigator();
 const Placeholder = () => <View style={{ flex: 1, backgroundColor: 'black' }} />;
 
 export default function App() {
   useEffect(() => {
-  NavigationBar.setVisibilityAsync('hidden');
-  NavigationBar.setBehaviorAsync('overlay-swipe');
-}, []);
+    NavigationBar.setVisibilityAsync('hidden');
+    NavigationBar.setBehaviorAsync('overlay-swipe');
+  }, []);
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator 
+        <Stack.Navigator
           initialRouteName="Splash"
-          screenOptions={{ 
+          screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: '#000' } // Keeps background consistent
           }}
         >
-         
+
 
           {/* --- ADMIN PORTAL --- */}
           <Stack.Screen name="AdminTabs" component={AdminTab} />
@@ -116,9 +118,10 @@ export default function App() {
           <Stack.Screen name="EditCourse" component={EditCourse} />
           <Stack.Screen name="LaunchCourse" component={LaunchCourse} />
           <Stack.Screen name="NewCourse" component={NewCourse} />
+          <Stack.Screen name="MainCourse" component={MainCourse} />
+          <Stack.Screen name="Domain" component={Domain} />
           <Stack.Screen name="GenerateTeacherAccount" component={GenerateTeacherAccount} />
-
-
+          
           <Stack.Screen name="GrowthScreen" component={Placeholder} />
           <Stack.Screen name="ReportsScreen" component={Report} />
           <Stack.Screen name="AdminScreen" component={Placeholder} /> */}
