@@ -11,7 +11,7 @@ import {
   Pressable
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // navigation for editing courses and modal
+import { useNavigation } from '@react-navigation/native';
 
 // Sample data to match your screenshot
 const COURSE_DATA = [
@@ -120,6 +120,23 @@ export default function CoursesScreen() {
           onPress={() => setModalVisible(false)}
         >
           <View style={styles.modalContent}>
+            {/* Add Main Course Option - New */}
+            <TouchableOpacity 
+              style={[styles.modalOption, styles.greenOption]}
+              onPress={() => navigateFromModal('MainCourse')}
+            >
+              <Text style={[styles.modalOptionText, styles.whiteText]}>Add Main Course</Text>
+            </TouchableOpacity>
+
+            {/* Add Domain Option - New */}
+            <TouchableOpacity 
+              style={[styles.modalOption, styles.blueOption]}
+              onPress={() => navigateFromModal('Domain')}
+            >
+              <Text style={[styles.modalOptionText, styles.whiteText]}>Add Domain</Text>
+            </TouchableOpacity>
+
+            {/* Existing Options */}
             <TouchableOpacity 
               style={styles.modalOption} 
               onPress={() => navigateFromModal('AddCampus')}
@@ -162,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 25,
-    paddingTop: 20, // separate the header from the top of the screen
+    paddingTop: 20,
   },
   headerText: {
     color: 'white',
@@ -246,7 +263,13 @@ const styles = StyleSheet.create({
     borderRadius: 32.5,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 10,
+    marginVertical: 8,
+  },
+  greenOption: {
+    backgroundColor: '#2E7D32', // Dark green
+  },
+  blueOption: {
+    backgroundColor: '#1565C0', // Dark blue
   },
   redOption: {
     backgroundColor: '#8B0000', 
