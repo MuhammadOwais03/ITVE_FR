@@ -11,6 +11,7 @@ import {
   Dimensions,
   FlatList,
   Platform,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -25,6 +26,7 @@ const initialReports = [
     avatar: 'https://i.pravatar.cc/150?img=11',
     complaint: 'someone is posting my picture from this account\ncan you look into it',
     attachments: ['1x JPG'],
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=500&fit=crop',
     status: 'resolved',
     handledBy: 'Admin.5',
     isPinned: false,
@@ -61,6 +63,7 @@ const initialReports = [
     avatar: 'https://i.pravatar.cc/150?img=45',
     complaint: 'Received hateful comments from another user\nPlease take action',
     attachments: ['2x PNG'],
+    image: 'https://images.unsplash.com/photo-1579546929662-711aa33e3bf5?w=400&h=500&fit=crop',
     status: 'resolved',
     handledBy: 'Admin.1',
     isPinned: true,
@@ -85,6 +88,7 @@ const initialReports = [
     avatar: 'https://i.pravatar.cc/150?img=33',
     complaint: 'Inappropriate content posted in comments',
     attachments: ['1x JPG', '1x PNG'],
+    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop',
     status: 'bogus',
     handledBy: 'Admin.7',
     isPinned: false,
@@ -109,6 +113,7 @@ const initialReports = [
     avatar: 'https://i.pravatar.cc/150?img=50',
     complaint: 'Copyright infringement - my work is being stolen',
     attachments: ['3x JPG'],
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop',
     status: 'resolved',
     handledBy: 'Admin.2',
     isPinned: false,
@@ -144,6 +149,9 @@ export default function App() {
   const [activeReport, setActiveReport] = useState(null);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [isHistoryView, setIsHistoryView] = useState(false); // Toggles main feed vs history
+  const [expandedImage, setExpandedImage] = useState(null);
+  const [expandedPost, setExpandedPost] = useState(null);
+  const [scaleAnim] = useState(new Animated.Value(0));
 
   // --- Data Filtering & Sorting ---
   const displayData = useMemo(() => {
@@ -195,6 +203,42 @@ export default function App() {
     setShowActionSheet(false);
   };
 
+  const handleImagePress = (imageUrl) => {
+    setExpandedImage(imageUrl);
+    scaleAnim.setValue(0);
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeImageModal = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setExpandedImage(null));
+  };
+
+  const handlePostPress = (item) => {
+    if (item.image) {
+      setExpandedPost(item);
+      scaleAnim.setValue(0);
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const closePostModal = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setExpandedPost(null));
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
@@ -221,7 +265,7 @@ export default function App() {
       <FlatList
         data={displayData}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 180 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
@@ -229,7 +273,11 @@ export default function App() {
           </Text>
         }
         renderItem={({ item }) => (
-          <View style={[styles.card, item.isPinned && styles.pinnedCardBorder]}>
+          <TouchableOpacity 
+            onPress={() => handlePostPress(item)}
+            activeOpacity={item.image ? 0.7 : 1}
+            style={[styles.card, item.isPinned && styles.pinnedCardBorder]}
+          >
             {item.isPinned && (
               <View style={styles.pinnedLabel}>
                 <Ionicons name="pin" size={12} color="#000" />
@@ -260,6 +308,15 @@ export default function App() {
               <Text style={styles.attachmentText}>{item.attachments[0]}</Text>
             )}
 
+            {item.image && (
+              <TouchableOpacity onPress={() => handleImagePress(item.image)} style={styles.imagePreview}>
+                <Image source={{ uri: item.image }} style={styles.imagePreviewImg} />
+                <View style={styles.imageOverlay}>
+                  <Ionicons name="expand" size={24} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            )}
+
             <View style={styles.cardFooter}>
               {item.status === 'pending' ? (
                 <View style={styles.replyBox}>
@@ -276,9 +333,100 @@ export default function App() {
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
+
+      {/* Post Expanded Modal */}
+      <Modal visible={!!expandedPost} transparent animationType="none">
+        <TouchableOpacity
+          style={styles.imageModalOverlay}
+          activeOpacity={1}
+          onPress={closePostModal}
+        >
+          <Animated.View
+            style={[
+              styles.expandedPostContainer,
+              {
+                transform: [
+                  {
+                    scale: scaleAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 1],
+                    }),
+                  },
+                ],
+                opacity: scaleAnim,
+              },
+            ]}
+          >
+            {expandedPost && (
+              <View style={styles.expandedPostContent}>
+                {/* Close Button */}
+                <TouchableOpacity 
+                  style={styles.closeBtn}
+                  onPress={closePostModal}
+                >
+                  <Ionicons name="close" size={28} color="#fff" />
+                </TouchableOpacity>
+
+                {/* Image */}
+                {expandedPost.image && (
+                  <Image source={{ uri: expandedPost.image }} style={styles.expandedPostImage} />
+                )}
+
+                {/* Post Info */}
+                <View style={styles.expandedPostInfo}>
+                  <View style={styles.expandedUserSection}>
+                    <Image source={{ uri: expandedPost.avatar }} style={styles.expandedAvatar} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.expandedUsername}>{expandedPost.username}</Text>
+                      <Text style={styles.expandedDateText}>{expandedPost.date}</Text>
+                    </View>
+                    <Text style={styles.expandedTimeText}>{expandedPost.time}</Text>
+                  </View>
+
+                  <Text style={styles.expandedComplaintText}>{expandedPost.complaint}</Text>
+                  
+                  {expandedPost.attachments.length > 0 && (
+                    <Text style={styles.expandedAttachmentText}>{expandedPost.attachments[0]}</Text>
+                  )}
+                </View>
+              </View>
+            )}
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Image Expanded Modal */}
+      <Modal visible={!!expandedImage} transparent animationType="none">
+        <TouchableOpacity
+          style={styles.imageModalOverlay}
+          activeOpacity={1}
+          onPress={closeImageModal}
+        >
+          <Animated.View
+            style={[
+              styles.imageModalContent,
+              {
+                transform: [
+                  {
+                    scale: scaleAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 1],
+                    }),
+                  },
+                ],
+                opacity: scaleAnim,
+              },
+            ]}
+          >
+            {expandedImage && (
+              <Image source={{ uri: expandedImage }} style={styles.expandedImage} />
+            )}
+          </Animated.View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Action Sheet Modal (Shared for both views) */}
       <Modal visible={showActionSheet} transparent animationType="fade">
@@ -357,6 +505,28 @@ const styles = StyleSheet.create({
   statusText: { fontWeight: '700', fontSize: 15 },
   textBlack: { color: '#000' },
   emptyText: { color: '#666', textAlign: 'center', marginTop: 50, fontSize: 16 },
+
+  // Image Styles
+  imagePreview: { width: '100%', height: 220, borderRadius: 12, overflow: 'hidden', marginVertical: 12, position: 'relative' },
+  imagePreviewImg: { width: '100%', height: '100%', borderRadius: 12 },
+  imageOverlay: { position: 'absolute', width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
+  imageModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  imageModalContent: { width: width * 0.85, height: width * 1.1, justifyContent: 'center', alignItems: 'center' },
+  expandedImage: { width: '100%', height: '100%', borderRadius: 12, resizeMode: 'contain' },
+
+  // Expanded Post Styles
+  expandedPostContainer: { width: width * 0.9, maxHeight: '85%', backgroundColor: '#111', borderRadius: 20, overflow: 'hidden' },
+  expandedPostContent: { flex: 1 },
+  closeBtn: { position: 'absolute', top: 15, right: 15, zIndex: 10, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 8 },
+  expandedPostImage: { width: '100%', height: width * 0.9, resizeMode: 'cover' },
+  expandedPostInfo: { padding: 20, backgroundColor: '#111' },
+  expandedUserSection: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  expandedAvatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },
+  expandedUsername: { color: '#E0E0E0', fontSize: 16, fontWeight: '700' },
+  expandedDateText: { color: '#777', fontSize: 12, marginTop: 2 },
+  expandedTimeText: { color: '#777', fontSize: 12 },
+  expandedComplaintText: { color: '#ccc', fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  expandedAttachmentText: { color: '#666', fontSize: 12, fontWeight: '600' },
 
   // Modals
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
